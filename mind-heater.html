@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мозговая разминка</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #080b14;
+    --text: #eef2ff;
+    --muted: #93a1bb;
+    --stroke: rgba(255, 255, 255, .12);
+    --good: #34d399;
+    --bad: #fb7185;
+    --sky: #38bdf8;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(600px 600px at 12% 8%, rgba(56, 189, 248, .20), transparent 70%),
+      radial-gradient(700px 700px at 88% 92%, rgba(139, 92, 246, .22), transparent 70%),
+      radial-gradient(500px 500px at 85% 10%, rgba(52, 211, 153, .12), transparent 70%);
+    pointer-events: none;
+  }
+
+  .app { position: relative; z-index: 1; width: 100%; }
+
+  /* ---------- Экраны ---------- */
+  .screen { display: none; width: 100%; }
+  .screen.active { display: block; animation: fadeIn .32s ease both; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px) scale(.99); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .card {
+    position: relative;
+    width: min(540px, 100%);
+    margin: 0 auto;
+    padding: 32px;
+    border-radius: 26px;
+    border: 1px solid var(--stroke);
+    background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.028));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255,255,255,.09);
+  }
+
+  h1 { font-size: clamp(21px, 5.4vw, 27px); margin: 0 0 8px; letter-spacing: -.02em; }
+  h2 { font-size: clamp(20px, 5vw, 26px); margin: 0 0 6px; letter-spacing: -.02em; }
+  .bolt { filter: drop-shadow(0 0 14px rgba(56, 189, 248, .9)); }
+
+  .sub { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.5; }
+
+  /* ---------- Настройки ---------- */
+  .field { display: block; margin-top: 20px; }
+
+  .label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13.5px; color: var(--muted); margin-bottom: 8px;
+  }
+  .label em {
+    font-style: normal; font-size: 11.5px;
+    letter-spacing: .08em; text-transform: uppercase; opacity: .75;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 15px 16px;
+    font: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--stroke);
+    border-radius: 15px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .field input:focus {
+    background: rgba(255,255,255,.085);
+    border-color: rgba(56,189,248,.75);
+    box-shadow: 0 0 0 4px rgba(56,189,248,.16);
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+  .hint { margin: 10px 0 0; font-size: 12.5px; color: var(--muted); opacity: .85; line-height: 1.4; }
+
+  /* ---------- Кнопки ---------- */
+  .btn {
+    font: inherit;
+    font-weight: 700;
+    font-size: 16.5px;
+    border: 1px solid transparent;
+    border-radius: 15px;
+    padding: 15px 22px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .22s ease, background .22s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .btn:active { transform: scale(.975); }
+
+  .btn.primary {
+    width: 100%;
+    margin-top: 26px;
+    color: #04121f;
+    background: linear-gradient(135deg, #5eead4, #38bdf8 55%, #818cf8);
+    box-shadow: 0 18px 40px -16px rgba(56, 189, 248, .95);
+  }
+  .btn.primary:hover { box-shadow: 0 22px 46px -16px rgba(56, 189, 248, 1); }
+
+  .btn.ghost {
+    background: rgba(255,255,255,.06);
+    border-color: var(--stroke);
+    color: var(--text);
+  }
+  .btn.ghost:hover { background: rgba(255,255,255,.11); }
+
+  .btn.small { width: 100%; margin-top: 16px; font-size: 14px; padding: 11px; color: var(--muted); }
+
+  /* ---------- Игровой экран ---------- */
+  .hud { display: flex; justify-content: space-between; gap: 12px; }
+  .hud-item { display: flex; flex-direction: column; gap: 3px; }
+  .hud-item.right { align-items: flex-end; text-align: right; }
+  .hud-label {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted);
+  }
+  .hud-value {
+    font-size: 22px; font-weight: 800;
+    font-variant-numeric: tabular-nums; line-height: 1;
+    transition: color .2s;
+  }
+  .hud-value.low { color: var(--bad); }
+
+  .timer-track {
+    height: 10px;
+    margin-top: 14px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%; width: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #34d399, #38bdf8);
+    box-shadow: 0 0 18px rgba(56, 189, 248, .55);
+    transition: box-shadow .25s ease;
+  }
+  .timer-bar.low {
+    background: linear-gradient(90deg, #f43f5e, #fb923c);
+    box-shadow: 0 0 18px rgba(244, 63, 94, .7);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .timer-bar.gain { box-shadow: 0 0 26px rgba(52, 211, 153, 1); }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+
+  .problem-wrap { margin: 30px 0 26px; text-align: center; }
+  .problem {
+    font-size: clamp(38px, 11vw, 58px);
+    font-weight: 800;
+    letter-spacing: .02em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #ffffff, #93c5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .problem.pop { animation: pop .3s cubic-bezier(.2, .9, .3, 1.4) both; }
+  @keyframes pop {
+    from { transform: scale(.82); opacity: .2; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .problem-wrap.shake { animation: shake .42s cubic-bezier(.36, .07, .19, .97) both; }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-7px); }
+    40%, 60% { transform: translateX(7px); }
+  }
+
+  .answer-row { display: flex; gap: 10px; }
+
+  .answer-input {
+    flex: 1; min-width: 0;
+    padding: 16px 18px;
+    font: inherit;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .answer-input::placeholder { color: rgba(255,255,255,.22); font-weight: 600; }
+  .answer-input:focus {
+    background: rgba(255,255,255,.09);
+    border-color: rgba(52, 211, 153, .8);
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, .15);
+  }
+
+  .btn.check {
+    width: 66px; padding: 0;
+    font-size: 22px;
+    color: #052e22;
+    background: linear-gradient(135deg, #6ee7b7, #34d399);
+    box-shadow: 0 14px 30px -14px rgba(52, 211, 153, .9);
+  }
+
+  /* ---------- Всплывающие подсказки ---------- */
+  .float-layer { position: absolute; inset: 0; pointer-events: none; }
+
+  .float {
+    position: absolute;
+    left: 50%;
+    top: 96px;
+    font-size: 19px;
+    font-weight: 800;
+    white-space: nowrap;
+    animation: floatUp .85s ease-out forwards;
+  }
+  .float.good { color: var(--good); text-shadow: 0 0 22px rgba(52, 211, 153, .9); }
+  .float.bad  { color: var(--bad);  text-shadow: 0 0 22px rgba(251, 113, 133, .9); }
+
+  @keyframes floatUp {
+    0%   { opacity: 0; transform: translate(-50%, 12px) scale(.7); }
+    22%  { opacity: 1; transform: translate(-50%, 0)    scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -44px) scale(1); }
+  }
+
+  /* ---------- Итоги ---------- */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  .stat {
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--stroke);
+    text-align: center;
+  }
+  .stat-value { display: block; font-size: 25px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat-label {
+    font-size: 11.5px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .1em;
+  }
+
+  .record { margin: 16px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+  .record.new {
+    color: #fcd34d; font-weight: 700;
+    text-shadow: 0 0 24px rgba(252, 211, 77, .45);
+  }
+
+  .row { display: flex; gap: 12px; margin-top: 24px; }
+  .row .btn { flex: 1; width: auto; margin-top: 0; }
+
+  /* ---------- Мобильные ---------- */
+  @media (max-width: 420px) {
+    .card { padding: 22px; border-radius: 20px; }
+    .problem-wrap { margin: 24px 0 20px; }
+    .hud-value { font-size: 19px; }
+    .btn.check { width: 58px; }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+
+  <!-- ===== Настройки ===== -->
+  <section id="screen-settings" class="screen active">
+    <div class="card">
+      <h1><span class="bolt">⚡</span> Мозговая разминка</h1>
+      <p class="sub">Решай примеры на скорость. Каждый верный ответ возвращает секунды на таймере — не дай ему дойти до нуля.</p>
+
+      <label class="field">
+        <span class="label">Стартовое время <em>сек</em></span>
+        <input id="input-start" type="number" min="10" max="300" step="5" value="60" inputmode="numeric">
+      </label>
+
+      <label class="field">
+        <span class="label">Бонус за верный ответ <em>сек</em></span>
+        <input id="input-bonus" type="number" min="1" max="60" step="1" value="3" inputmode="numeric">
+      </label>
+      <p class="hint" id="bonus-hint"></p>
+
+      <button id="btn-start" class="btn primary" type="button">Начать разминку</button>
+    </div>
+  </section>
+
+  <!-- ===== Игра ===== -->
+  <section id="screen-game" class="screen">
+    <div class="card">
+      <div class="float-layer" id="float-layer"></div>
+
+      <div class="hud">
+        <div class="hud-item">
+          <span class="hud-label">Решено</span>
+          <span class="hud-value" id="hud-score">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Серия</span>
+          <span class="hud-value" id="hud-streak">0</span>
+        </div>
+        <div class="hud-item right">
+          <span class="hud-label">Время</span>
+          <span class="hud-value" id="hud-time">60.0</span>
+        </div>
+      </div>
+
+      <div class="timer-track"><div class="timer-bar" id="timer-bar"></div></div>
+
+      <div class="problem-wrap" id="problem-wrap">
+        <div class="problem" id="problem">7 × 8 =</div>
+      </div>
+
+      <form class="answer-row" id="answer-form" autocomplete="off">
+        <input class="answer-input" id="answer" type="text" inputmode="numeric"
+               autocomplete="off" autocorrect="off" spellcheck="false" placeholder="ответ">
+        <button class="btn check" type="submit" aria-label="Проверить">↵</button>
+      </form>
+
+      <button class="btn ghost small" id="btn-quit" type="button">Завершить</button>
+    </div>
+  </section>
+
+  <!-- ===== Итоги ===== -->
+  <section id="screen-over" class="screen">
+    <div class="card">
+      <h2 id="over-title">Время вышло</h2>
+      <p class="sub" id="over-sub"></p>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-value" id="final-correct">0</span><span class="stat-label">верных</span></div>
+        <div class="stat"><span class="stat-value" id="final-wrong">0</span><span class="stat-label">ошибок</span></div>
+        <div class="stat"><span class="stat-value" id="final-acc">0%</span><span class="stat-label">точность</span></div>
+        <div class="stat"><span class="stat-value" id="final-streak">0</span><span class="stat-label">лучшая серия</span></div>
+      </div>
+
+      <p class="record" id="record-line"></p>
+
+      <div class="row">
+        <button id="btn-again" class="btn primary" type="button">Ещё раз</button>
+        <button id="btn-settings" class="btn ghost" type="button">Настройки</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- Константы сложности ---------- */
+  var LIMITS = {
+    add: [20, 40, 60, 80, 100, 120, 150, 200],
+    mul: [9, 9, 12, 12, 12, 15, 15, 15],
+    div: [9, 9, 10, 12, 12, 12, 15, 15]
+  };
+
+  /* ---------- Состояние ---------- */
+  var cfg = { startTime: 60, bonus: 3 };
+
+  var state = {
+    running: false,
+    timeLeft: 0,
+    correct: 0,
+    wrong: 0,
+    streak: 0,
+    bestStreak: 0,
+    problem: { text: '', answer: 0 },
+    lastTs: 0,
+    rafId: 0
+  };
+
+  var gainTimer = null;
+
+  /* ---------- DOM ---------- */
+  var screens = {
+    settings: $('screen-settings'),
+    game: $('screen-game'),
+    over: $('screen-over')
+  };
+
+  var startInput = $('input-start');
+  var bonusInput = $('input-bonus');
+  var bonusHint = $('bonus-hint');
+
+  var timerBar = $('timer-bar');
+  var hudTime = $('hud-time');
+  var hudScore = $('hud-score');
+  var hudStreak = $('hud-streak');
+
+  var problemEl = $('problem');
+  var problemWrap = $('problem-wrap');
+  var answerForm = $('answer-form');
+  var answerInput = $('answer');
+  var floatLayer = $('float-layer');
+
+  /* ---------- Утилиты ---------- */
+  function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function showScreen(name) {
+    Object.keys(screens).forEach(function (key) {
+      screens[key].classList.toggle('active', key === name);
+    });
+  }
+
+  /* ---------- Настройки ---------- */
+  function updateBonusHint() {
+    bonusHint.textContent = cfg.bonus >= cfg.startTime
+      ? 'Бонус равен стартовому времени: таймер будет восстанавливаться до максимума.'
+      : 'Бонус не может быть больше стартового времени (' + cfg.startTime + ' с).';
+  }
+
+  function readSettings() {
+    var st = Math.round(Number(startInput.value));
+    if (!isFinite(st)) st = 60;
+    st = clamp(st, 10, 300);
+
+    var bn = Math.round(Number(bonusInput.value));
+    if (!isFinite(bn)) bn = 3;
+    bn = clamp(bn, 1, st);           // бонус не больше стартового времени
+
+    cfg.startTime = st;
+    cfg.bonus = bn;
+
+    startInput.value = st;
+    bonusInput.value = bn;
+    bonusInput.max = String(st);
+
+    updateBonusHint();
+    saveSettings();
+  }
+
+  function loadSettings() {
+    try {
+      var raw = localStorage.getItem('brainwarmup.settings');
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (isFinite(s.startTime)) cfg.startTime = s.startTime;
+        if (isFinite(s.bonus)) cfg.bonus = s.bonus;
+      }
+    } catch (e) { /* ignore */ }
+
+    cfg.startTime = clamp(Math.round(cfg.startTime), 10, 300);
+    cfg.bonus = clamp(Math.round(cfg.bonus), 1, cfg.startTime);
+
+    startInput.value = cfg.startTime;
+    bonusInput.value = cfg.bonus;
+    bonusInput.max = String(cfg.startTime);
+    updateBonusHint();
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem('brainwarmup.settings', JSON.stringify(cfg));
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- Генерация примеров ---------- */
+  function currentLevel() {
+    return Math.min(8, 1 + Math.floor(state.correct / 5));
+  }
+
+  function generateProblem() {
+    var level = currentLevel();
+    var i = level - 1;
+
+    var ops = ['+', '-'];
+    if (level >= 2) ops.push('×');
+    if (level >= 3) ops.push('÷');
+
+    var op = ops[randInt(0, ops.length - 1)];
+
+    if (op === '+') {
+      var maxA = LIMITS.add[i];
+      var a1 = randInt(2, maxA), b1 = randInt(2, maxA);
+      return { text: a1 + ' + ' + b1, answer: a1 + b1 };
+    }
+
+    if (op === '-') {
+      var maxS = LIMITS.add[i];
+      var a2 = randInt(2, maxS), b2 = randInt(2, maxS);
+      if (b2 > a2) { var t = a2; a2 = b2; b2 = t; }
+      return { text: a2 + ' − ' + b2, answer: a2 - b2 };
+    }
+
+    if (op === '×') {
+      var maxM = LIMITS.mul[i];
+      var a3 = randInt(2, maxM), b3 = randInt(2, maxM);
+      return { text: a3 + ' × ' + b3, answer: a3 * b3 };
+    }
+
+    // Деление — всегда нацело
+    var maxD = LIMITS.div[i];
+    var divisor = randInt(2, maxD);
+    var quotient = randInt(2, maxD);
+    return { text: (divisor * quotient) + ' ÷ ' + divisor, answer: quotient };
+  }
+
+  function nextProblem() {
+    state.problem = generateProblem();
+    problemEl.textContent = state.problem.text + ' =';
+    problemEl.classList.remove('pop');
+    void problemEl.offsetWidth;   // перезапуск анимации
+    problemEl.classList.add('pop');
+    answerInput.value = '';
+  }
+
+  /* ---------- Таймер ---------- */
+  function updateTimer() {
+    var ratio = cfg.startTime > 0 ? state.timeLeft / cfg.startTime : 0;
+    ratio = clamp(ratio, 0, 1);
+
+    timerBar.style.width = (ratio * 100).toFixed(2) + '%';
+    hudTime.textContent = state.timeLeft.toFixed(1);
+
+    var low = ratio <= 0.25;
+    timerBar.classList.toggle('low', low);
+    hudTime.classList.toggle('low', low);
+  }
+
+  function tick(ts) {
+    if (!state.running) return;
+
+    var dt = (ts - state.lastTs) / 1000;
+    if (dt < 0) dt = 0;
+    if (dt > 0.5) dt = 0.5;        // защита от «скачков» при сворачивании вкладки
+    state.lastTs = ts;
+
+    state.timeLeft -= dt;
+
+    if (state.timeLeft <= 0) {
+      state.timeLeft = 0;
+      updateTimer();
+      endGame(false);
+      return;
+    }
+
+    updateTimer();
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  /* ---------- Игровой процесс ---------- */
+  function startGame() {
+    readSettings();
+
+    cancelAnimationFrame(state.rafId);
+
+    state.running = true;
+    state.timeLeft = cfg.startTime;
+    state.correct = 0;
+    state.wrong = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+
+    hudScore.textContent = '0';
+    hudStreak.textContent = '0';
+    updateTimer();
+
+    showScreen('game');
+
+    nextProblem();
+
+    state.lastTs = performance.now();
+    state.rafId = requestAnimationFrame(tick);
+
+    setTimeout(function () { answerInput.focus(); }, 60);
+  }
+
+  function floatText(text, cls) {
+    var node = document.createElement('div');
+    node.className = 'float ' + cls;
+    node.textContent = text;
+    floatLayer.appendChild(node);
+    setTimeout(function () { node.remove(); }, 900);
+  }
+
+  function onCorrect() {
+    state.correct++;
+    state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+    var before = state.timeLeft;
+    state.timeLeft = Math.min(cfg.startTime, state.timeLeft + cfg.bonus);  // не выше стартового
+    var gained = state.timeLeft - before;
+
+    updateTimer();
+    hudScore.textContent = state.correct;
+    hudStreak.textContent = state.streak;
+
+    if (gained >= 0.05) {
+      floatText('+' + Math.round(gained) + ' с', 'good');
+    } else {
+      floatText('максимум', 'good');
+    }
+
+    timerBar.classList.add('gain');
+    clearTimeout(gainTimer);
+    gainTimer = setTimeout(function () { timerBar.classList.remove('gain'); }, 260);
+
+    nextProblem();
+  }
+
+  function onWrong() {
+    state.wrong++;
+    state.streak = 0;
+    hudStreak.textContent = '0';
+
+    floatText('= ' + state.problem.answer, 'bad');
+
+    problemWrap.classList.remove('shake');
+    void problemWrap.offsetWidth;
+    problemWrap.classList.add('shake');
+
+    nextProblem();
+  }
+
+  function submitAnswer() {
+    if (!state.running) return;
+
+    var raw = answerInput.value.trim();
+    if (raw === '') return;
+
+    var value = Number(raw);
+    if (!isFinite(value)) { answerInput.value = ''; return; }
+
+    if (value === state.problem.answer) onCorrect();
+    else onWrong();
+  }
+
+  /* ---------- Итоги ---------- */
+  function subText(n) {
+    if (n === 0) return 'Разминка только началась — попробуй ещё раз!';
+    if (n < 5) return 'Хорошее начало. Ещё подход — и мозг разогреется.';
+    if (n < 12) return 'Отличный темп! Мозг явно проснулся.';
+    if (n < 20) return 'Мощно! Ты в рабочем режиме.';
+    return 'Невероятно! Ты готов свернуть горы.';
+  }
+
+  function endGame(quit) {
+    state.running = false;
+    cancelAnimationFrame(state.rafId);
+    answerInput.blur();
+
+    var total = state.correct + state.wrong;
+    var acc = total ? Math.round((state.correct / total) * 100) : 0;
+
+    $('over-title').textContent = quit ? 'Разминка завершена' : 'Время вышло';
+    $('over-sub').textContent = subText(state.correct);
+
+    $('final-correct').textContent = state.correct;
+    $('final-wrong').textContent = state.wrong;
+    $('final-acc').textContent = acc + '%';
+    $('final-streak').textContent = state.bestStreak;
+
+    var best = 0;
+    try { best = Number(localStorage.getItem('brainwarmup.best')) || 0; } catch (e) { /* ignore */ }
+
+    var recordLine = $('record-line');
+    if (state.correct > best) {
+      best = state.correct;
+      try { localStorage.setItem('brainwarmup.best', String(best)); } catch (e) { /* ignore */ }
+      recordLine.textContent = '🎉 Новый рекорд: ' + best + ' верных ответов!';
+      recordLine.classList.add('new');
+    } else {
+      recordLine.textContent = 'Личный рекорд: ' + best;
+      recordLine.classList.remove('new');
+    }
+
+    showScreen('over');
+  }
+
+  /* ---------- События ---------- */
+  answerForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    submitAnswer();
+  });
+
+  answerInput.addEventListener('input', function () {
+    var cleaned = answerInput.value.replace(/[^\d-]/g, '');
+    if (cleaned !== answerInput.value) answerInput.value = cleaned;
+  });
+
+  startInput.addEventListener('change', readSettings);
+  bonusInput.addEventListener('change', readSettings);
+  startInput.addEventListener('input', function () {
+    var st = Number(startInput.value);
+    if (isFinite(st) && st > 0) bonusInput.max = String(st);
+  });
+
+  $('btn-start').addEventListener('click', startGame);
+  $('btn-again').addEventListener('click', startGame);
+  $('btn-settings').addEventListener('click', function () { showScreen('settings'); });
+  $('btn-quit').addEventListener('click', function () {
+    if (state.running) endGame(true);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    if (screens.settings.classList.contains('active')) {
+      e.preventDefault();
+      startGame();
+    } else if (screens.over.classList.contains('active')) {
+      e.preventDefault();
+      startGame();
+    }
+  });
+
+  /* ---------- Инициализация ---------- */
+  loadSettings();
+  updateTimer();
+})();
+</script>
+</body>
+</html>
